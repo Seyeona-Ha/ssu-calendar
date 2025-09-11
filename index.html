@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <title>SSU 학사 캘린더 구독</title>
-  <!-- GA4 gtag: 본인 측정ID로 교체 -->
+
+  <!-- ✅ GA4: 네 측정ID로 설정됨 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-43NXY72THF"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -11,94 +12,101 @@
     gtag('js', new Date());
     gtag('config', 'G-43NXY72THF');
 
-    function isIOS(){
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // ---- 헬퍼 ----
+    const UTM = new URLSearchParams(location.search);
+    function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+
+    // ✅ 공통: 이벤트 전송 후 리다이렉트(이탈 중 이벤트 유실 방지)
+    function sendAndGo(eventName, params, url){
+      gtag('event', eventName, { ...params, transport_type: 'beacon' });
+      setTimeout(()=> { window.location.href = url; }, 150); // 100~200ms 권장
     }
 
-    function redirect(){
+    // 초기 진입 분기
+    function boot(){
       const icsHttps = 'https://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics';
       const icsWebcal = 'webcal://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics';
 
       if (isIOS()) {
-        gtag('event', 'click_ios_webcal');
-        // iOS: 애플 캘린더 자동 구독
-        window.location.href = icsWebcal;
+        // iOS: 구독 시도 이벤트 → webcal로 이동
+        sendAndGo('click_ios_webcal', {
+          utm_source: UTM.get('utm_source') || '(direct)',
+          utm_medium: UTM.get('utm_medium') || '(none)',
+          utm_campaign: UTM.get('utm_campaign') || '(not set)'
+        }, icsWebcal);
       } else {
-        // Android/PC: 안내 보여주기
+        // Android/PC: 안내 섹션 노출 이벤트
+        gtag('event', 'show_android_help', {
+          utm_source: UTM.get('utm_source') || '(direct)',
+          utm_medium: UTM.get('utm_medium') || '(none)',
+          utm_campaign: UTM.get('utm_campaign') || '(not set)'
+        });
         document.getElementById('android').style.display = 'block';
-        document.getElementById('dl').href = icsHttps;
-        gtag('event', 'show_android_help');
+        document.getElementById('btnDownloadIcs').href = icsHttps;
       }
     }
 
-    document.addEventListener('DOMContentLoaded', redirect);
+    document.addEventListener('DOMContentLoaded', boot);
   </script>
+
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 24px; }
-    .card { max-width: 680px; margin: 0 auto; border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
+    .card { max-width: 720px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; }
     h1 { margin-top: 0; }
     #android { display: none; }
-    a.button { display: inline-block; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; text-decoration: none; }
+    .button { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid #111; text-decoration:none; font-weight:600; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
   </style>
 </head>
 <body>
   <div class="card" id="android">
-  <h1>SSU 캘린더</h1>
+    <h1>SSU 캘린더</h1>
 
-  <h3>iPhone 안내</h3>
-  <p>iPhone은 이 페이지 접속 시 <b>애플 캘린더로 자동 구독</b> 팝업이 뜹니다.</p>
+    <h3>iPhone 안내</h3>
+    <p>iPhone은 이 페이지 접속 시 <b>애플 캘린더로 자동 구독</b> 팝업이 뜹니다.</p>
 
-  <h3>갤럭시(안드로이드) / PC 안내</h3>
-  <ol>
-    <li style="margin-bottom:10px;">
-      <a id="btnDownloadIcs" class="button"
-         onclick="gtag('event','click_android_download')"
-         href="https://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics">
-        .ics 파일 다운로드
-      </a>
-      <div style="margin-top:6px;color:#555;">갤럭시 기본 캘린더: 다운로드 후 <b>연결 프로그램 “캘린더”</b> 선택 → <b>저장</b></div>
-    </li>
+    <h3>갤럭시(안드로이드) / PC 안내</h3>
+    <ol>
+      <li style="margin-bottom:12px;">
+        <a id="btnDownloadIcs" class="button"
+           onclick="gtag('event','click_android_download',{transport_type:'beacon',utm_source:UTM.get('utm_source')||'(direct)',utm_medium:UTM.get('utm_medium')||'(none)',utm_campaign:UTM.get('utm_campaign')||'(not set)'});"
+           href="#">
+          .ics 파일 다운로드
+        </a>
+        <div style="margin-top:6px;color:#555;">
+          갤럭시 기본 캘린더: 다운로드 후 <b>연결 프로그램 “캘린더”</b> 선택 → <b>저장</b>
+        </div>
+      </li>
 
-    <li style="margin-top:14px;">
-      <div style="margin-bottom:6px;">구글 캘린더(PC 웹) → <b>다른 캘린더</b> → <b>URL로 추가</b>에 아래 주소를 붙여넣기:</div>
+      <li style="margin-top:14px;">
+        <div style="margin-bottom:8px;">구글 캘린더(PC 웹) → <b>다른 캘린더</b> → <b>URL로 추가</b>에 아래 주소를 붙여넣기:</div>
 
-      <div style="display:flex; gap:8px; align-items:center;">
-        <code id="gcalUrl" style="font-size:16px; padding:8px 10px; border-radius:8px; background:#f3f4f6; display:inline-block; user-select:all;">
-          https://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics
-        </code>
-        <button id="btnCopy" class="button" type="button"
-                onclick="copyGcalUrl(); gtag('event','click_google_url_copy');">
-          주소 복사
-        </button>
-      </div>
-      <div style="margin-top:6px;color:#666;">PC에서 추가하면 휴대폰의 구글 캘린더 앱과 자동 동기화됩니다.</div>
-    </li>
-  </ol>
-</div>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <code id="gcalUrl" style="font-size:18px; padding:10px 12px; border-radius:8px; background:#f3f4f6; display:inline-block; user-select:all;">
+            https://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics
+          </code>
+          <button id="btnCopy" class="button" type="button"
+                  onclick="copyGcalUrl(); gtag('event','click_google_url_copy',{transport_type:'beacon',utm_source:UTM.get('utm_source')||'(direct)',utm_medium:UTM.get('utm_medium')||'(none)',utm_campaign:UTM.get('utm_campaign')||'(not set)'});">
+            주소 복사
+          </button>
+        </div>
+        <div style="margin-top:6px;color:#666;">PC에서 추가하면 휴대폰의 구글 캘린더 앱과 자동 동기화됩니다.</div>
+      </li>
+    </ol>
+  </div>
 
-<script>
-  // 주소 복사
-  function copyGcalUrl() {
-    const el = document.getElementById('gcalUrl');
-    const text = el.textContent.trim();
-    navigator.clipboard?.writeText(text).then(()=> {
-      const btn = document.getElementById('btnCopy');
-      const old = btn.textContent;
-      btn.textContent = '복사됨!';
-      setTimeout(()=> btn.textContent = old, 1500);
-    });
-  }
-</script>
-
-<style>
-  .button {
-    display:inline-block;
-    padding:10px 14px;
-    border-radius:10px;
-    border:1px solid #111;
-    text-decoration:none;
-    font-weight:600;
-  }
-  code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-</style>
-
+  <script>
+    // 주소 복사 기능
+    function copyGcalUrl() {
+      const el = document.getElementById('gcalUrl');
+      const text = el.textContent.trim();
+      navigator.clipboard?.writeText(text).then(()=> {
+        const btn = document.getElementById('btnCopy');
+        const old = btn.textContent;
+        btn.textContent = '복사됨!';
+        setTimeout(()=> btn.textContent = old, 1500);
+      });
+    }
+  </script>
+</body>
+</html>
