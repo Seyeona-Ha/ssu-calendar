@@ -9,15 +9,15 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag('js', new Date());
-    gtag('config', 'G-43NXY72THF'); // ← 본인 GA4 ID
+    gtag('config', 'G-43NXY72THF');
 
     function isIOS(){
       return /iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
 
     function redirect(){
-      const icsHttps = 'https://seyeona-ha.github.io/yourssu-calender/ssu_2025_09.ics';
-      const icsWebcal = 'webcal://seyeona-ha.github.io/yourssu-calender/ssu_2025_09.ics';
+      const icsHttps = 'https://seyeona-ha.github.io/ssu-calender/ssu_2025_09.ics';
+      const icsWebcal = 'webcal://seyeona-ha.github.io/ssu-calender/ssu_2025_09.ics';
 
       if (isIOS()) {
         gtag('event', 'click_ios_webcal');
@@ -43,16 +43,62 @@
 </head>
 <body>
   <div class="card" id="android">
-    <h1>학사 일정 캘린더 추가</h1>
-    <p>iPhone은 자동으로 애플 캘린더에 구독됩니다.</p>
-    <h3>Android/PC 안내</h3>
-    <ol>
-      <li><a id="dl" class="button" onclick="gtag('event','click_android_download')" href="#">.ics 파일 다운로드</a></li>
-      <li>갤럭시: 다운로드 후 “삼성 캘린더로 열기” → 일정 추가</li>
-      <li>구글 캘린더 사용자: <b>PC 웹</b>에서 “URL로 추가”로 아래 주소를 등록<br>
-        <code>https://seyeona-ha.github.io/yourssu-calender/ssu_2025_09.ics</code>
-      </li>
-    </ol>
-  </div>
-</body>
-</html>
+  <h1>SSU 캘린더</h1>
+
+  <h3>iPhone 안내</h3>
+  <p>iPhone은 이 페이지 접속 시 <b>애플 캘린더로 자동 구독</b> 팝업이 뜹니다.</p>
+
+  <h3>갤럭시(안드로이드) / PC 안내</h3>
+  <ol>
+    <li style="margin-bottom:10px;">
+      <a id="btnDownloadIcs" class="button"
+         onclick="gtag('event','click_android_download')"
+         href="https://seyeona-ha.github.io/ssu-calender/ssu_2025_09.ics">
+        .ics 파일 다운로드
+      </a>
+      <div style="margin-top:6px;color:#555;">갤럭시 기본 캘린더: 다운로드 후 <b>연결 프로그램 “캘린더”</b> 선택 → <b>저장</b></div>
+    </li>
+
+    <li style="margin-top:14px;">
+      <div style="margin-bottom:6px;">구글 캘린더(PC 웹) → <b>다른 캘린더</b> → <b>URL로 추가</b>에 아래 주소를 붙여넣기:</div>
+
+      <div style="display:flex; gap:8px; align-items:center;">
+        <code id="gcalUrl" style="font-size:16px; padding:8px 10px; border-radius:8px; background:#f3f4f6; display:inline-block; user-select:all;">
+          https://seyeona-ha.github.io/ssu-calender/ssu_2025_09.ics
+        </code>
+        <button id="btnCopy" class="button" type="button"
+                onclick="copyGcalUrl(); gtag('event','click_google_url_copy');">
+          주소 복사
+        </button>
+      </div>
+      <div style="margin-top:6px;color:#666;">PC에서 추가하면 휴대폰의 구글 캘린더 앱과 자동 동기화됩니다.</div>
+    </li>
+  </ol>
+</div>
+
+<script>
+  // 주소 복사
+  function copyGcalUrl() {
+    const el = document.getElementById('gcalUrl');
+    const text = el.textContent.trim();
+    navigator.clipboard?.writeText(text).then(()=> {
+      const btn = document.getElementById('btnCopy');
+      const old = btn.textContent;
+      btn.textContent = '복사됨!';
+      setTimeout(()=> btn.textContent = old, 1500);
+    });
+  }
+</script>
+
+<style>
+  .button {
+    display:inline-block;
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid #111;
+    text-decoration:none;
+    font-weight:600;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+</style>
+
