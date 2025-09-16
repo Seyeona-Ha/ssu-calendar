@@ -4,22 +4,71 @@
   <meta charset="utf-8" />
   <title>SSU 학사 캘린더 구독</title>
 
-  
+  <!-- GA
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-43NXY72THF"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){ dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-43NXY72THF');
+  </script>
+  -->
+  
+<!-- ✅ Mixpanel SDK -->
+  <script type="text/javascript">
+    (function (f, b) { 
+      if (!b.__SV) { 
+        var e, g, i, h; window.mixpanel = b; 
+        b._i = []; 
+        b.init = function (e, f, c) { 
+          function g(a, d) { 
+            var b = d.split("."); 
+            2 == b.length && ((a = a[b[0]]), (d = b[1])); 
+            a[d] = function () { 
+              a.push([d].concat(Array.prototype.slice.call(arguments, 0))); 
+            }; 
+          } 
+          var a = b; 
+          "undefined" !== typeof c ? (a = b[c] = []) : (c = "mixpanel"); 
+          a.people = a.people || []; 
+          i = "disable time_event track track_pageview track_links track_forms track_with_groups add_group set_group remove_group register register_once alias unregister identify name_tag set_config reset opt_in_tracking opt_out_tracking has_opted_in_tracking has_opted_out_tracking clear_opt_in_out_tracking start_batch_senders people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user people.remove".split(" "); 
+          for (h = 0; h < i.length; h++) g(a, i[h]); 
+          b._i.push([e, f, c]); 
+        }; 
+        b.__SV = 1.2; 
+        e = f.createElement("script"); 
+        e.type = "text/javascript"; e.async = !0; 
+        e.src = "//cdn.mxpnl.com/libs/mixpanel-2-latest.min.js"; 
+        g = f.getElementsByTagName("script")[0]; 
+        g.parentNode.insertBefore(e, g); 
+      } 
+    })(document, window.mixpanel || []);
+  </script>
+  <script>
+    // ✅ 프로젝트 토큰 입력
+    mixpanel.init("58841f6a9929d69f78f7cced9a962f32", {
+      debug: true,
+      track_pageview: true
+    });
+  </script>
 
+  <script>
     // ---- 헬퍼 ----
     const UTM = new URLSearchParams(location.search);
     function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
 
     // ✅ 공통: 이벤트 전송 후 리다이렉트(이탈 중 이벤트 유실 방지)
     function sendAndGo(eventName, params, url){
-      gtag('event', eventName, { ...params, transport_type: 'beacon' });
-      setTimeout(()=> { window.location.href = url; }, 150); // 100~200ms 권장
+      mixpanel.track(eventName, params);
+      setTimeout(()=> { window.location.href = url; }, 150); 
+    }
+      // UTM 공통 객체
+    function utmParams(){
+      return {
+        utm_source: UTM.get('utm_source') || '(direct)',
+        utm_medium: UTM.get('utm_medium') || '(none)',
+        utm_campaign: UTM.get('utm_campaign') || '(not set)'
+      };
     }
 
     // 초기 진입 분기
@@ -27,27 +76,23 @@
       const icsHttps = 'https://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics';
       const icsWebcal = 'webcal://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics';
 
+     // ✅ 페이지뷰 이벤트
+      mixpanel.track("page_view", utmParams());
+
       if (isIOS()) {
-        // iOS: 구독 시도 이벤트 → webcal로 이동
-        sendAndGo('click_ios_webcal', {
-          utm_source: UTM.get('utm_source') || '(direct)',
-          utm_medium: UTM.get('utm_medium') || '(none)',
-          utm_campaign: UTM.get('utm_campaign') || '(not set)'
-        }, icsWebcal);
+        // iOS: 구독 시도
+        sendAndGo('ios_webcal_click', utmParams(), icsWebcal);
       } else {
-        // Android/PC: 안내 섹션 노출 이벤트
-        gtag('event', 'show_android_help', {
-          utm_source: UTM.get('utm_source') || '(direct)',
-          utm_medium: UTM.get('utm_medium') || '(none)',
-          utm_campaign: UTM.get('utm_campaign') || '(not set)'
-        });
+        // Android/PC: 안내 노출
+        mixpanel.track('show_android_help', utmParams());
+
         document.getElementById('android').style.display = 'block';
         document.getElementById('btnDownloadIcs').href = icsHttps;
       }
     }
 
     document.addEventListener('DOMContentLoaded', boot);
-  </script>
+  </script>>
 
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 24px; }
@@ -69,7 +114,7 @@
     <ol>
       <li style="margin-bottom:12px;">
         <a id="btnDownloadIcs" class="button"
-           onclick="gtag('event','click_android_download',{transport_type:'beacon',utm_source:UTM.get('utm_source')||'(direct)',utm_medium:UTM.get('utm_medium')||'(none)',utm_campaign:UTM.get('utm_campaign')||'(not set)'});"
+           onclick="mixpanel.track('android_ics_download_click', utmParams());"
            href="#">
           .ics 파일 다운로드
         </a>
@@ -86,7 +131,7 @@
             https://seyeona-ha.github.io/ssu-calendar/ssu_2025_09.ics
           </code>
           <button id="btnCopy" class="button" type="button"
-                  onclick="copyGcalUrl(); gtag('event','click_google_url_copy',{transport_type:'beacon',utm_source:UTM.get('utm_source')||'(direct)',utm_medium:UTM.get('utm_medium')||'(none)',utm_campaign:UTM.get('utm_campaign')||'(not set)'});">
+                  onclick="copyGcalUrl(); mixpanel.track('google_calendar_url_copy', utmParams());">
             주소 복사
           </button>
         </div>
