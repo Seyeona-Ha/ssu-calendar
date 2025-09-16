@@ -80,15 +80,29 @@
       mixpanel.track("page_view", utmParams());
 
       if (isIOS()) {
-        // iOS: 구독 시도
-        sendAndGo('ios_webcal_click', utmParams(), icsWebcal);
-      } else {
-        // Android/PC: 안내 노출
-        mixpanel.track('show_android_help', utmParams());
+  // iOS: 구독 시도 (Mixpanel 이벤트 전송 완료 후 이동)
+  let redirected = false;
+  mixpanel.track('ios_webcal_click', utmParams(), function() {
+    if (!redirected) {
+      redirected = true;
+      window.location.href = icsWebcal;
+    }
+  });
 
-        document.getElementById('android').style.display = 'block';
-        document.getElementById('btnDownloadIcs').href = icsHttps;
-      }
+  // 혹시 콜백이 늦게 오면 0.5초 뒤 강제로 이동
+  setTimeout(() => {
+    if (!redirected) {
+      window.location.href = icsWebcal;
+    }
+  }, 500);
+
+} else {
+  // Android/PC: 안내 노출
+  mixpanel.track('show_android_help', utmParams());
+
+  document.getElementById('android').style.display = 'block';
+  document.getElementById('btnDownloadIcs').href = icsHttps;
+}
     }
 
     document.addEventListener('DOMContentLoaded', boot);
